@@ -5,9 +5,31 @@
 
   - name: install apache2 package
     ansible.builtin.package:
-      name: 
-        - "{{ apache_package }}"
-        - "{{ php_package }}"
+      name: apache2
       state: latest
       update_cache: yes
+    when: ansible_distribution == "Ubuntu"
 
+  - name: install apache on web servers
+    tags: apache, ubuntu
+    ansible.builtin.apt:
+      name:
+        - apache2
+        - libapache2-mod-php
+    when: ansible_distribution == "Ubuntu"
+
+  - name: ensure apache is running (fedora)
+    tags: apache, ubuntu
+    ansible.builtin.service:
+      name: httpd
+      state: started
+    when: ansible_distribution == "Fedora"
+
+  - name: copy html file for site
+    tags: apache, ubuntu
+    ansible.builtin.copy:
+      src: default_site.html
+      dest: /var/www/html/index.html
+      owner: root
+      group: root
+      mode: 0644
