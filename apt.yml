@@ -1,2 +1,7 @@
 ---
+ - name: Update apt
+   hosts: all
+   remote_user: adminlocal
 
+   tasks:
+  
