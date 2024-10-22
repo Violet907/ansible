@@ -1,0 +1,18 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  - name: Update and upgrade apt packages
+    become: yes
+    apt:
+       upgrade: yes
+       update_cache: yes
+       cache_valid_time: 86400 #One day
+       
+  - name: Check that the reboot-requied exists      
+    stat:        
+      path: /var/run/reboot-required      
+    register: p    
+  - debug:        
+      msg: "Reboot required"      
+      
