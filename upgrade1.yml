@@ -5,8 +5,8 @@
   - name: Update and upgrade apt packages
     become: yes
     apt:
-       upgrade: yes
        update_cache: yes
+       upgrade: yes
        cache_valid_time: 86400 #One day
        
   - name: Check that the reboot-requied exists      
@@ -15,4 +15,4 @@
     register: p    
   - debug:        
       msg: "Reboot required"      
-      
+    when: p.stat.exists
