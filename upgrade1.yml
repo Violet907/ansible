@@ -8,6 +8,7 @@
        update_cache: yes
        upgrade: yes
        cache_valid_time: 86400 #One day
+    when: ansible_os_family == "Debian"
        
   - name: Check that the reboot-requied exists      
     stat:        
@@ -16,3 +17,9 @@
   - debug:        
       msg: "Reboot required"      
     when: p.stat.exists
+
+  - name: Update yum cache
+    ansible.builtin.dnf:
+      name: '*'
+      state: latest
+    when: ansible_os_family == "RedHat"
