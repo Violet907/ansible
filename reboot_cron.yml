@@ -1,0 +1,19 @@
+---
+- name: Schedule monthly reboots
+  hosts: all
+  become: yes
+  tasks:
+    - name: Schedule reboot for second Tuesday of each month at 9 PM
+      cron:
+        name: "Monthly reboot"
+        minute: "0"
+        hour: "21"
+        weekday: "2"
+        month: "*"
+        special_time: monthly
+        job: "/sbin/shutdown -r now"
+        user: root
+      
+    - name: Output confirmation message
+      debug:
+        msg: "Reboot scheduled for {{ inventory_hostname }} on the second Tuesday of each month at 9 PM"
