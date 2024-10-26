@@ -5,14 +5,14 @@
   tasks:
   - name: Schedule reboot for second Tuesday of each month at 9 PM
     cron:
-      name: "Monthly reboot"
+      name: "Daily reboot"
       minute: "0"
       hour: "21"
       weekday: "2"
       month: "*"
       day: "8-14"
       job: "/sbin/shutdown -r now"
-      user: vi
+      user: root
       
   - name: Output confirmation message
     debug:

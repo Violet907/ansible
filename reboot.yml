@@ -1,12 +1,19 @@
 ---
 
- - name: Reboot the machine
-   hosts: all
-   gather_facts: no
-   remote_user: vi
-   become: true
-
-   tasks:
-     - name: Reboot the machine (Wait for 5 min)
-       reboot:
-         reboot_timeout: 300
+- hosts: all
+  become: yes
+  tasks:
+  - name: Schedule reboot for second Tuesday of each month at 9 PM
+    cron:
+      name: "Daily reboot"
+      minute: "*/5"
+      hour: "*"
+      weekday: "*"
+      month: "*"
+      day: "*"
+      job: "/sbin/shutdown -r now"
+      user: root
+      
+  - name: Output confirmation message
+    debug:
+     msg: "Reboot scheduled for {{ inventory_hostname }} on the second Tuesday of each month at 9 PM"
