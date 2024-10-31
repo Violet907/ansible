@@ -1,0 +1,53 @@
+---
+- name: Install CrowdStrike
+  hosts: all
+  become: yes
+  vars:
+    crowdstrike_package: "discord.deb"
+    source_path: "/home/vi/Desktop/{{ crowdstrike_package }}"
+    dest_path: "/tmp/{{ crowdstrike_package }}"
+
+  tasks:
+    - name: Check if CrowdStrike is already installed
+      command: dpkg-query -W -f='${Status}' discord
+      register: package_check
+      failed_when: false
+      changed_when: false
+
+    - name: Copy CrowdStrike package to target hosts
+      copy:
+        src: "{{ source_path }}"
+        dest: "{{ dest_path }}"
+      when: package_check.rc != 0
+
+    - name: Install CrowdStrike package
+      apt:
+        deb: "{{ dest_path }}"
+        state: present
+      when: package_check.rc != 0
+
+    - name: Clean up temporary files
+      file:
+        path: "{{ dest_path }}"
+        state: absent
+      when: package_check.rc != 0
+
+    - name: Verify CrowdStrike installation
+      command: dpkg-query -W -f='${Status}' discord
+      register: package_status
+      failed_when: package_status.stdout != "install ok installed"
+      changed_when: false
+
+    - name: Output installation status
+      debug:
+        msg: "CrowdStrike has been successfully installed on {{ inventory_hostname }}"
+      when: package_check.rc != 0
+
+    - name: Output already installed status
+      debug:
+        msg: "CrowdStrike is already installed on {{ inventory_hostname }}"
+      when: package_check.rc == 0
+
+    - name: Skip installation if CrowdStrike is already installed
+      meta: end_play
+      when: package_check.rc == 0
