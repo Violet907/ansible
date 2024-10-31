@@ -1,0 +1,27 @@
+---
+- name: Modify unattended configuration - 10periodic
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: Download-Upgradeable Packages ON
+      replace:
+        path: /etc/apt/apt.conf.d/10periodic
+        regexp: '(APT::Periodic::Download-Upgradeable-Packages\s*)"0";'
+        replace: '\1"1";'
+
+    - name: AutoCleanInverval ON
+      replace:
+        path: /etc/apt/apt.conf.d/10periodic
+        regexp: '(APT::Periodic::AutocleanInterval\s*)"0";'
+        replace: '\1"1";'
+    
+
+    - name: Verify changes
+      command: cat /etc/apt/apt.conf.d/10periodic
+      register: file_content
+      changed_when: false
+
+    - name: Display file content
+      debug:
+        var: file_content.stdout_lines
