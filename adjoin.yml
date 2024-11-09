@@ -1,0 +1,59 @@
+---
+- name: Join Linux server to ALASKA.IHS.GOV domain
+  hosts: all
+  become: yes
+  vars_prompt:
+    - name: ad_user
+      prompt: "Enter AD username"
+      private: no
+    - name: ad_password
+      prompt: "Enter AD password"
+      private: yes
+
+  vars:
+    realm: "ALASKA.IHS.GOV"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - realmd
+          - sssd
+          - samba-common
+          - samba-common-bin
+          - samba-libs
+          - sssd-tools
+          - krb5-user
+          - adcli
+          - packagekit
+          - vim
+        state: present
+
+    - name: Configure Kerberos
+      copy:
+        content: "{{ realm }}"
+        dest: /etc/krb5.conf
+
+    - name: Authenticate with Kerberos
+      command: echo {{ ad_password }} | kinit {{ ad_user }}
+      no_log: true
+
+    - name: Join the domain
+      command: echo {{ ad_password }} | realm join --verbose -U {{ ad_user }} {{ realm }}
+      register: join_result
+      changed_when: "'Already joined to this domain' not in join_result.stderr"
+      failed_when:
+        - join_result.rc != 0
+        - "'Already joined to this domain' not in join_result.stderr"
+      no_log: true
+
+    - name: Clean up Kerberos ticket
+      command: kdestroy
+
+    - name: Display success message
+      debug:
+        msg: "Server has been joined to the domain {{ realm }}"
